@@ -19,7 +19,7 @@ model Setor {
 
 model Documento {
   id Int @id @default(autoincrement())
-  nroDocumento String @db.VarChar(10)
+  nroDocumento String @db.VarChar(100)
   titulo String @db.VarChar(40)
   descDocumento String @db.VarChar(255)
   dataDocumento DateTime
@@ -51,4 +51,10 @@ model TramitacaoDocumento {
   setorEnvia Setor @relation(name: "SetorEnvia", fields: [setorEnvioId], references: [id])
 
   setorRecebe Setor @relation(name: "SetorRecebe", fields: [setorRecebeId], references: [id])
+}
+
+model SequenciaDocumento {
+  id          Int      @id @default(autoincrement())
+  data        DateTime @unique
+  proximoNumero Int    @default(1)
 }
