@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "src/prisma.service";
-import { Prisma } from "@prisma/client";
+import { Prisma, Setor } from "@prisma/client";
 
 @Injectable()
 export class SetorRepository {
@@ -8,5 +8,11 @@ export class SetorRepository {
 
   async findAll() {
     return this.prisma.setor.findMany();
+  }
+
+  async create(data: Prisma.SetorCreateInput): Promise<Setor> {
+    return this.prisma.setor.create({
+      data,
+    });
   }
 }
