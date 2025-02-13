@@ -1,0 +1,54 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Setor {
+  id Int @id @default(autoincrement())
+  sigla String @db.VarChar(10)
+  descSetor String @db.VarChar(60)
+
+  tramitacoesEnviadas TramitacaoDocumento[] @relation("SetorEnvia")
+  tramitacoesRecebidas TramitacaoDocumento[] @relation("SetorRecebe")
+}
+
+model Documento {
+  id Int @id @default(autoincrement())
+  nroDocumento String @db.VarChar(10)
+  titulo String @db.VarChar(40)
+  descDocumento String @db.VarChar(255)
+  dataDocumento DateTime
+  pathArquivoPDF String @db.VarChar(100)
+  tipoDocumentoId Int
+  
+  tipoDocumento TipoDocumento @relation(fields: [tipoDocumentoId], references: [id])
+
+  tramitacoes TramitacaoDocumento[]
+}
+
+model TipoDocumento {
+  id Int @id @default(autoincrement())
+  descTipoDocumento String @db.VarChar(30)
+
+  documentos Documento[]
+}
+
+model TramitacaoDocumento {
+  id Int @id @default(autoincrement())
+  documentoId Int
+  setorEnvioId Int
+  dataHoraEnvio DateTime
+  setorRecebeId Int
+  dataHoraRecebido DateTime?
+
+  documento Documento @relation(fields: [documentoId], references: [id])
+
+  setorEnvia Setor @relation(name: "SetorEnvia", fields: [setorEnvioId], references: [id])
+
+  setorRecebe Setor @relation(name: "SetorRecebe", fields: [setorRecebeId], references: [id])
+}
