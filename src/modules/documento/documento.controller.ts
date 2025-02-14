@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post } from "@nestjs/common";
 import { DocumentoService } from "./documento.service";
 import { CreateTipoDocumentoDTO } from "./dtos/create-tipo-documento.dto";
 import { CreateDocumentoDTO } from "./dtos/create-documento.dto";
@@ -10,6 +10,11 @@ export class DocumentoController {
   @Get()
   async findAll() {
     return this.documentoService.findAll();
+  }
+
+  @Get(':numero')
+  async getDocumentoByNumero(@Param('numero') numero: string) {
+    return await this.documentoService.consultaDocumentoByNumero(numero);
   }
 
   @Post()

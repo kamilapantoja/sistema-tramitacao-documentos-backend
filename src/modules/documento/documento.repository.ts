@@ -15,6 +15,25 @@ export class DocumentoRepository {
     });
   }
 
+  async consultaDocumentoByNumero(numero: Prisma.DocumentoWhereInput) {
+    return this.prisma.documento.findFirst({
+        select: {
+            id: true,
+            nroDocumento: true,
+            titulo: true,
+            descDocumento: true,
+            dataDocumento: true,
+            tipoDocumento: {
+                select: {
+                    id: true,
+                    descTipoDocumento: true,
+                }
+            }
+        },
+        where: numero
+    })
+  }
+
   async criaDocumento(data: Prisma.DocumentoCreateInput): Promise<Documento> {
     return await this.prisma.documento.create({
       data,

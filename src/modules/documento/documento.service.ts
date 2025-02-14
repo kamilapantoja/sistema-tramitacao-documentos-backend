@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { DocumentoRepository } from "./documento.repository";
 import { CreateTipoDocumentoDTO } from "./dtos/create-tipo-documento.dto";
 import { Prisma } from "@prisma/client";
@@ -21,6 +21,18 @@ export class DocumentoService {
     return this.repository.criaTipoDocumento(tipoDocumentoData);
   }
 
+  async consultaDocumentoByNumero(numero: string) {
+    const numeroDocumento: Prisma.DocumentoWhereInput = {
+      nroDocumento: numero,
+    };
+
+    const documento = await this.repository.consultaDocumentoByNumero(numeroDocumento);
+
+    if (!documento) throw new NotFoundException("Documento não encontrado");
+    
+    return documento;
+  }
+
   async criaDocumento(data: CreateDocumentoDTO) {
     const hoje = new Date();
     const dataFormatada = `${hoje.getFullYear()}${(hoje.getMonth() + 1).toString().padStart(2, "0")}${hoje.getDate().toString().padStart(2, "0")}`;
@@ -37,7 +49,7 @@ export class DocumentoService {
     }
 
     const numeroSequencial = proximoNumero.toString().padStart(4, "0");
-    const nroDocumento = `${dataFormatada}-TIPO${data.tipo}-${numeroSequencial}`;
+    const nroDocumento = `${dataFormatada}-${data.tipo}-${numeroSequencial}`;
 
     const documentoData: Prisma.DocumentoCreateInput = {
       nroDocumento,
