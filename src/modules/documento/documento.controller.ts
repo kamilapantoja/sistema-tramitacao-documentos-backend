@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post } from "@nestjs/common";
 import { DocumentoService } from "./documento.service";
 import { CreateTipoDocumentoDTO } from "./dtos/create-tipo-documento.dto";
 import { CreateDocumentoDTO } from "./dtos/create-documento.dto";
+import { EnviaDocumentoDTO } from "./dtos/envia-documento.dto";
 
 @Controller("documento")
 export class DocumentoController {
@@ -25,6 +26,11 @@ export class DocumentoController {
   @Post("tipo")
   async createTipoDocumento(@Body() createTipoDocumentoDTO: CreateTipoDocumentoDTO) {
     return this.documentoService.createTipoDocumento(createTipoDocumentoDTO);
+  }
+
+  @Post("envia")
+  async enviaDocumento(@Body() enviaDocumentoDTO: EnviaDocumentoDTO) {
+    return this.documentoService.enviaDocumento(enviaDocumentoDTO);
   }
 
 }

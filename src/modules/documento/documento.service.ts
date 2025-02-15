@@ -4,6 +4,7 @@ import { CreateTipoDocumentoDTO } from "./dtos/create-tipo-documento.dto";
 import { Prisma } from "@prisma/client";
 import { CreateDocumentoDTO } from "./dtos/create-documento.dto";
 import { v4 as uuidv4 } from "uuid";
+import { EnviaDocumentoDTO } from "./dtos/envia-documento.dto";
 
 @Injectable()
 export class DocumentoService {
@@ -32,6 +33,35 @@ export class DocumentoService {
     
     return documento;
   }
+
+  async enviaDocumento(data: EnviaDocumentoDTO) {
+    const documentoExiste = await this.repository.verificaExistenciaDocumento(data.id);
+  
+    if (!documentoExiste) {
+      throw new NotFoundException("Documento não encontrado");
+    }
+  
+    const tramiteDocumento: Prisma.TramitacaoDocumentoCreateInput = {
+      enviadoPor: data.enviadoPor,
+      setorEnvia: {
+        connect: { id: data.idSetorEnvio },
+      },
+      setorRecebe: {
+        connect: { id: data.idSetorRecebimento },
+      },
+      documento: {
+        connect: { id: data.id },
+      },
+
+      enviado: true,
+      dataHoraEnvio: new Date(),
+      
+    };
+  
+    return this.repository.enviaDocumento(tramiteDocumento);
+  }
+  
+
 
   async criaDocumento(data: CreateDocumentoDTO) {
     const hoje = new Date();
