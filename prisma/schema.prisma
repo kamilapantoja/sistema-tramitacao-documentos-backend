@@ -42,9 +42,12 @@ model TramitacaoDocumento {
   id Int @id @default(autoincrement())
   documentoId Int
   setorEnvioId Int
-  dataHoraEnvio DateTime
+  dataHoraEnvio DateTime?
   setorRecebeId Int
   dataHoraRecebido DateTime?
+  enviadoPor String @db.VarChar(100)
+  enviado Boolean @default(false)
+  recebido Boolean @default(false)
 
   documento Documento @relation(fields: [documentoId], references: [id])
 
