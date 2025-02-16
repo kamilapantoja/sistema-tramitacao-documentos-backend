@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Put } from "@nestjs/common";
 import { DocumentoService } from "./documento.service";
 import { CreateTipoDocumentoDTO } from "./dtos/create-tipo-documento.dto";
 import { CreateDocumentoDTO } from "./dtos/create-documento.dto";
@@ -13,9 +13,9 @@ export class DocumentoController {
     return this.documentoService.findAll();
   }
 
-  @Get(':numero')
-  async getDocumentoByNumero(@Param('numero') numero: string) {
-    return await this.documentoService.consultaDocumentoByNumero(numero);
+  @Get("lista-tipo")
+  async buscaListaTipoDocumento() {
+    return await this.documentoService.buscaListaTipoDocumento();
   }
 
   @Post()
@@ -33,4 +33,18 @@ export class DocumentoController {
     return this.documentoService.enviaDocumento(enviaDocumentoDTO);
   }
 
+  @Get(":numero")
+  async getDocumentoByNumero(@Param("numero") numero: string) {
+    return await this.documentoService.consultaDocumentoByNumero(numero);
+  }
+
+  @Put(":id")
+  async atualizaDocumento(@Param("id") id: number, @Body() body: CreateDocumentoDTO) {
+    return await this.documentoService.atualizaDocumento(id, body);
+  }
+
+  @Delete(":id")
+  async deletaDocumento(@Param("id") id: number) {
+    return await this.documentoService.deletaDocumento(id);
+  }
 }

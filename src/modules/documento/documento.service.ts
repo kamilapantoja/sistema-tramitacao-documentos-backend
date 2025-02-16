@@ -1,9 +1,8 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { DocumentoRepository } from "./documento.repository";
 import { CreateTipoDocumentoDTO } from "./dtos/create-tipo-documento.dto";
-import { Prisma } from "@prisma/client";
+import { Documento, Prisma } from "@prisma/client";
 import { CreateDocumentoDTO } from "./dtos/create-documento.dto";
-import { v4 as uuidv4 } from "uuid";
 import { EnviaDocumentoDTO } from "./dtos/envia-documento.dto";
 
 @Injectable()
@@ -30,17 +29,25 @@ export class DocumentoService {
     const documento = await this.repository.consultaDocumentoByNumero(numeroDocumento);
 
     if (!documento) throw new NotFoundException("Documento não encontrado");
-    
+
     return documento;
+  }
+
+  async buscaTipoDocumento(id: number) {
+    return await this.repository.buscaTipoDocumento(id);
+  }
+
+  async buscaListaTipoDocumento() {
+    return await this.repository.buscaListaTipoDocumento();
   }
 
   async enviaDocumento(data: EnviaDocumentoDTO) {
     const documentoExiste = await this.repository.verificaExistenciaDocumento(data.id);
-  
+
     if (!documentoExiste) {
       throw new NotFoundException("Documento não encontrado");
     }
-  
+
     const tramiteDocumento: Prisma.TramitacaoDocumentoCreateInput = {
       enviadoPor: data.enviadoPor,
       setorEnvia: {
@@ -55,13 +62,10 @@ export class DocumentoService {
 
       enviado: true,
       dataHoraEnvio: new Date(),
-      
     };
-  
+
     return this.repository.enviaDocumento(tramiteDocumento);
   }
-  
-
 
   async criaDocumento(data: CreateDocumentoDTO) {
     const hoje = new Date();
@@ -93,5 +97,43 @@ export class DocumentoService {
     };
 
     return this.repository.criaDocumento(documentoData);
+  }
+
+  async atualizaDocumento(id: number, data: CreateDocumentoDTO): Promise<Documento> {
+    const documentoExistente = await this.repository.buscaDocumentoComTramite(id);
+
+    if (!documentoExistente) {
+      throw new NotFoundException(`Documento com ID ${id} não encontrado.`);
+    }
+
+    if (documentoExistente.tramitacoes && documentoExistente.tramitacoes.length > 0) {
+      throw new BadRequestException("Não é possível atualizar um documento que já está em Trâmite.");
+    }
+
+    const documentoData: Prisma.DocumentoUpdateInput = {
+      tipoDocumento: {
+        connect: { id: data.tipo },
+      },
+      titulo: data.titulo,
+      descDocumento: data.descricao,
+      pathArquivoPDF: data.arquivoPdf,
+    };
+
+    return await this.repository.atualizaDocumento(id, documentoData);
+  } //fazer verificacao no update e delete (se o documento tiver relacionamento com tramitacaoDocumento então
+  // ele não pode ser editado ou deletado)
+
+  async deletaDocumento(id: number): Promise<Documento> {
+    const documentoExistente = await this.repository.buscaDocumentoComTramite(id);
+
+    if (!documentoExistente) {
+      throw new NotFoundException(`Documento com ID ${id} não encontrado.`);
+    }
+
+    if (documentoExistente.tramitacoes && documentoExistente.tramitacoes.length > 0) {
+      throw new BadRequestException("Não é possível deletar um documento que já está em Trâmite.");
+    }
+
+    return await this.repository.deletaDocumento(id);
   }
 }

@@ -38,10 +38,10 @@ export class EnviaDocumentoDTO {
   @IsNotEmpty()
   descricao: string;
 
-  // @ApiProperty({ description: "Data de envio do documento", type: String, example: "2025-02-13T15:30:00Z" })
-  // @IsString()
-  // @IsNotEmpty()
-  // dataEnvio: string;
+  @ApiProperty({ description: "Data de envio do documento", type: String, example: "2025-02-13T15:30:00Z" })
+  @IsString()
+  @IsNotEmpty()
+  dataEnvio?: string;
 
   @ApiProperty({ description: "Nome da pessoa que enviou o documento", type: String, example: "Maria Silva" })
   @IsString()
