@@ -3,14 +3,23 @@ import { DocumentoRepository } from "./documento.repository";
 import { CreateTipoDocumentoDTO } from "./dtos/create-tipo-documento.dto";
 import { Documento, Prisma } from "@prisma/client";
 import { CreateDocumentoDTO } from "./dtos/create-documento.dto";
+import { v4 as uuidv4 } from "uuid";
 import { EnviaDocumentoDTO } from "./dtos/envia-documento.dto";
+import { unlink } from "fs";
+import { RecebeDocumentoDTO } from "./dtos/recebe-documento.dto";
 
 @Injectable()
 export class DocumentoService {
   constructor(private repository: DocumentoRepository) {}
 
   async findAll() {
-    return await this.repository.findAll();
+    return (await this.repository.findAll()).map((d) => {
+      return { ...d, prettyName: this.prettyNameFromPath(d.pathArquivoPDF) };
+    });
+  }
+
+  prettyNameFromPath(path: string) {
+    return path.substring(37);
   }
 
   async createTipoDocumento(data: CreateTipoDocumentoDTO) {
@@ -49,7 +58,7 @@ export class DocumentoService {
     }
 
     const tramiteDocumento: Prisma.TramitacaoDocumentoCreateInput = {
-      enviadoPor: data.enviadoPor,
+      enviadoPor: "João",
       setorEnvia: {
         connect: { id: data.idSetorEnvio },
       },
@@ -65,6 +74,20 @@ export class DocumentoService {
     };
 
     return this.repository.enviaDocumento(tramiteDocumento);
+  }
+
+  async recebeDocumento(data: RecebeDocumentoDTO) {
+    const tramitacaoExiste = await this.repository.verificaExistenciaTramitacao(data.id);
+    if (!tramitacaoExiste) {
+      throw new NotFoundException("Documento não encontrado");
+    }
+
+    const updateData: Prisma.TramitacaoDocumentoUpdateInput = {
+      recebido: true,
+      dataHoraRecebido: new Date(),
+    };
+
+    return this.repository.recebeDocumento(data.id, updateData);
   }
 
   async criaDocumento(data: CreateDocumentoDTO) {
@@ -99,6 +122,18 @@ export class DocumentoService {
     return this.repository.criaDocumento(documentoData);
   }
 
+  async deletaArquivoDocumento(path: string) {
+    const filename = `${process.env.UPLOAD_FOLDER}${path}`;
+    await new Promise<void>((resolve) => {
+      unlink(filename, (err) => {
+        if (err) {
+          throw err;
+        }
+        resolve();
+      });
+    });
+  }
+
   async atualizaDocumento(id: number, data: CreateDocumentoDTO): Promise<Documento> {
     const documentoExistente = await this.repository.buscaDocumentoComTramite(id);
 
@@ -109,7 +144,7 @@ export class DocumentoService {
     if (documentoExistente.tramitacoes && documentoExistente.tramitacoes.length > 0) {
       throw new BadRequestException("Não é possível atualizar um documento que já está em Trâmite.");
     }
-
+    await this.deletaArquivoDocumento(documentoExistente.pathArquivoPDF);
     const documentoData: Prisma.DocumentoUpdateInput = {
       tipoDocumento: {
         connect: { id: data.tipo },
@@ -120,8 +155,7 @@ export class DocumentoService {
     };
 
     return await this.repository.atualizaDocumento(id, documentoData);
-  } //fazer verificacao no update e delete (se o documento tiver relacionamento com tramitacaoDocumento então
-  // ele não pode ser editado ou deletado)
+  }
 
   async deletaDocumento(id: number): Promise<Documento> {
     const documentoExistente = await this.repository.buscaDocumentoComTramite(id);

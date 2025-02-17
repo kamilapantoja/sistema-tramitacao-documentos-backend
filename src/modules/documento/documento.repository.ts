@@ -12,19 +12,24 @@ export class DocumentoRepository {
         nroDocumento: true,
         titulo: true,
         pathArquivoPDF: true,
+        tipoDocumento: true,
+        descDocumento: true,
         tramitacoes: {
           select: {
+            id: true,
             dataHoraEnvio: true,
             dataHoraRecebido: true,
             setorEnvia: {
               select: {
                 id: true,
+                sigla: true,
                 descSetor: true,
               },
             },
             setorRecebe: {
               select: {
                 id: true,
+                sigla: true,
                 descSetor: true,
               },
             },
@@ -75,6 +80,15 @@ export class DocumentoRepository {
     });
   }
 
+  async recebeDocumento(id: number, data: Prisma.TramitacaoDocumentoUpdateInput): Promise<TramitacaoDocumento> {
+    return await this.prisma.tramitacaoDocumento.update({
+      where: {
+        id,
+      },
+      data,
+    });
+  }
+
   async consultaDocumentoByNumero(numero: Prisma.DocumentoWhereInput) {
     return this.prisma.documento.findFirst({
       select: {
@@ -91,6 +105,14 @@ export class DocumentoRepository {
         },
       },
       where: numero,
+    });
+  }
+
+  async verificaExistenciaTramitacao(id: number) {
+    return await this.prisma.tramitacaoDocumento.findFirst({
+      where: {
+        id,
+      },
     });
   }
 
