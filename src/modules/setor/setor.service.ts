@@ -14,9 +14,22 @@ export class SetorService {
   async create(data: CreateSetorDTO) {
     const setorData: Prisma.SetorCreateInput = {
       sigla: data.sigla,
-      descSetor: data.descricao,
+      descSetor: data.descSetor,
     };
 
     return this.repository.create(setorData);
+  }
+
+  async update(id: number, data: CreateSetorDTO) {
+    const setorData: Prisma.SetorUpdateInput = {
+      sigla: data.sigla,
+      descSetor: data.descSetor,
+    };
+
+    return this.repository.update(id, setorData);
+  }
+
+  async delete(id: number) {
+    return this.repository.delete(id);
   }
 }

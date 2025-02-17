@@ -15,4 +15,21 @@ export class SetorRepository {
       data,
     });
   }
+
+  async update(id: number, data: Prisma.SetorUpdateInput): Promise<Setor> {
+    return this.prisma.setor.update({
+      where: {
+        id,
+      },
+      data,
+    });
+  }
+
+  async delete(id: number): Promise<Setor> {
+    return this.prisma.setor.delete({
+      where: {
+        id,
+      },
+    });
+  }
 }

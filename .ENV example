@@ -1,0 +1,2 @@
+DATABASE_URL="postgresql://postgres:SUA_SENHA@localhost:5432/postgres"
+UPLOAD_FOLDER="CAMINHO DA PASTA ONDE SERÃO GUARDADOS DOS PDFs"
